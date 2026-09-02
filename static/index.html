@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=112181807', 'ym');
+
+        ym(112181807, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/112181807" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Краткий пересказ книг</title>
@@ -45,13 +59,13 @@
         .plan-block .btn-essay:hover { background: #27ae60; }
         #planResult, #essayResult { margin-top: 15px; white-space: pre-wrap; }
         #essayResult { background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #2ecc71; }
-        /* удалён стиль для usage-info */
+        .footer { margin-top: 30px; text-align: center; font-size: 0.9em; color: #888; }
     </style>
 </head>
 <body>
     <h1>📚 Краткий пересказ книг</h1>
 
-    <!-- Шаг 1: Поиск книги  -->
+    <!-- Шаг 1: Поиск книги (заголовок изменён) -->
     <div class="step" id="stepSearch">
         <h2>📖 Поиск произведения</h2>
         <div class="input-group">
