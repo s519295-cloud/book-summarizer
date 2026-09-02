@@ -161,7 +161,7 @@ def summarize_text(text: str, title: str, depth: str = 'short') -> dict:
 Текст произведения:
 {text}
 
-Пересказ:
+Пересказ (заверши пересказ полностью):
 """
     try:
         response = client.chat.completions.create(
@@ -192,14 +192,14 @@ def generate_essay_plan(title: str, topic: str, summary: str) -> dict:
 Краткий пересказ произведения (для контекста):
 {summary}
 
-План сочинения:
+План сочинения (заверши план полностью, не обрывай на полуслове):
 """
     try:
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.6,
-            max_tokens=600
+            max_tokens=1200  # увеличено для полного плана
         )
         plan = response.choices[0].message.content.strip()
         usage = response.usage.dict() if response.usage else {}
@@ -221,14 +221,14 @@ def write_essay(title: str, topic: str, plan: str, summary: str) -> dict:
 Краткий пересказ произведения (для контекста):
 {summary}
 
-Сочинение:
+Сочинение (заверши сочинение полностью):
 """
     try:
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
-            max_tokens=1500
+            max_tokens=2000  # увеличено для полного сочинения
         )
         essay = response.choices[0].message.content.strip()
         usage = response.usage.dict() if response.usage else {}
@@ -269,11 +269,9 @@ def ping():
 # ---------- Эндпоинт для Яндекс верификации ----------
 @app.get("/yandex_8014abb5af78fa5c.html")
 async def yandex_verify():
-    # Сначала пробуем отдать реальный файл, если он есть в корне
     if os.path.exists("yandex_8014abb5af78fa5c.html"):
         return FileResponse("yandex_8014abb5af78fa5c.html", media_type="text/html")
     else:
-        # Если файла нет, отдаём содержимое напрямую
         return HTMLResponse(content='<html><body>Verification: 8014abb5af78fa5c</body></html>')
 
 # ---------- Эндпоинт для Sitemap ----------
