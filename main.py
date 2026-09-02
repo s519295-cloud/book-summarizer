@@ -4,7 +4,7 @@ import re
 import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -266,6 +266,17 @@ def home():
 def ping():
     return {"status": "ok", "message": "Сервер работает"}
 
+# ---------- Эндпоинт для Яндекс верификации ----------
+@app.get("/yandex_8014abb5af78fa5c.html")
+async def yandex_verify():
+    # Сначала пробуем отдать реальный файл, если он есть в корне
+    if os.path.exists("yandex_8014abb5af78fa5c.html"):
+        return FileResponse("yandex_8014abb5af78fa5c.html", media_type="text/html")
+    else:
+        # Если файла нет, отдаём содержимое напрямую
+        return HTMLResponse(content='<html><body>Verification: 8014abb5af78fa5c</body></html>')
+
+# ---------- Основные эндпоинты ----------
 @app.post("/search")
 def search_links_endpoint(request: SearchRequest):
     if client is None:
