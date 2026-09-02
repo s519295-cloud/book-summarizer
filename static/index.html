@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Краткий пересказ книг</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f7f9fc;
+            color: #1a1a2e;
+        }
+        h1 { color: #16213e; text-align: center; border-bottom: 3px solid #0f3460; padding-bottom: 10px; }
+        .step { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .step h2 { margin-top: 0; color: #0f3460; }
+        .input-group { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+        .input-group input, .input-group button { padding: 12px; border-radius: 8px; font-size: 16px; border: 1px solid #ccc; }
+        .input-group input { flex: 2; }
+        .input-group button { flex: 1; background: #0f3460; color: white; border: none; cursor: pointer; }
+        .input-group button:hover { background: #1a4f7a; }
+        .links-list { list-style: none; padding: 0; }
+        .links-list li { margin: 10px 0; padding: 10px; background: #eef2f7; border-radius: 6px; cursor: pointer; border: 2px solid transparent; word-break: break-all; }
+        .links-list li:hover { border-color: #0f3460; background: #dde4ed; }
+        .links-list li.selected { border-color: #0f3460; background: #c5d5e6; }
+        .depth-selector { margin: 15px 0; padding: 15px; background: #eef2f7; border-radius: 8px; }
+        .depth-selector label { margin-right: 15px; display: inline-block; }
+        .depth-selector input[type="radio"] { margin-right: 5px; }
+        .depth-description { font-size: 0.9em; color: #555; margin-left: 5px; }
+        #result { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-top: 20px; line-height: 1.6; }
+        .loading { color: #0f3460; text-align: center; font-style: italic; }
+        .error { color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .success { color: #2e7d32; background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .hidden { display: none; }
+        .footer { margin-top: 30px; text-align: center; font-size: 0.9em; color: #666; }
+        .btn-summarize { background: #0f3460; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .btn-summarize:hover { background: #1a4f7a; }
+        .plan-block { margin-top: 20px; border-top: 2px dashed #0f3460; padding-top: 20px; }
+        .plan-block textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; min-height: 60px; box-sizing: border-box; }
+        .plan-block .btn-plan { background: #e67e22; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .plan-block .btn-plan:hover { background: #d35400; }
+        .plan-block .btn-essay { background: #2ecc71; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; display: none; }
+        .plan-block .btn-essay:hover { background: #27ae60; }
+        #planResult, #essayResult { margin-top: 15px; white-space: pre-wrap; }
+        #essayResult { background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #2ecc71; }
+        .usage-info { font-size: 0.9em; color: #555; margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>📚 Краткий пересказ книг</h1>
+
+    <!-- Шаг 1 -->
+    <div class="step" id="stepSearch">
+        <h2>🔍 Шаг 1: Найдите книгу</h2>
+        <div class="input-group">
+            <input type="text" id="bookTitle" placeholder="Название книги (например, Гранатовый браслет)" />
+            <input type="text" id="bookAuthor" placeholder="Автор (опционально)" />
+            <button id="searchBtn">🔎 Найти ссылки</button>
+        </div>
+        <div id="searchResult"></div>
+    </div>
+
+    <!-- Шаг 2 -->
+    <div class="step hidden" id="stepSelect">
+        <h2>📄 Шаг 2: Выберите ссылку и глубину пересказа</h2>
+        <p>Выберите ссылку, затем укажите желаемую глубину:</p>
+        <ul class="links-list" id="linksList"></ul>
+
+        <div class="depth-selector hidden" id="depthSelector">
+            <p><strong>Выберите глубину пересказа:</strong></p>
+            <label><input type="radio" name="depth" value="very_short"> Очень краткий <span class="depth-description">(100–200 слов)</span></label><br>
+            <label><input type="radio" name="depth" value="short" checked> Краткий <span class="depth-description">(200–300 слов)</span></label><br>
+            <label><input type="radio" name="depth" value="medium"> Средний <span class="depth-description">(300–400 слов)</span></label><br>
+            <label><input type="radio" name="depth" value="detailed"> Подробный <span class="depth-description">(400–500 слов)</span></label><br>
+            <label><input type="radio" name="depth" value="deep"> Глубокий <span class="depth-description">(500–700 слов)</span></label>
+        </div>
+
+        <button id="summarizeBtn" class="btn-summarize hidden">📖 Пересказать</button>
+    </div>
+
+    <!-- Результат пересказа -->
+    <div id="result">
+        <p>Здесь появится пересказ...</p>
+    </div>
+
+    <!-- Блок плана и сочинения -->
+    <div id="planBlock" class="plan-block hidden">
+        <h3>✍️ Нужно написать сочинение?</h3>
+        <p>Введите тему сочинения (например, «Тема любви в повести "Гранатовый браслет"»), и я составлю план.</p>
+        <textarea id="essayTopic" placeholder="Тема сочинения..."></textarea>
+        <button id="planBtn" class="btn-plan">📝 Получить план</button>
+        <div id="planResult"></div>
+
+        <button id="writeEssayBtn" class="btn-essay">📝 Написать сочинение по плану</button>
+        <div id="essayResult"></div>
+    </div>
+
+    <div class="footer">
+        Поиск через DeepSeek, пересказ через DeepSeek, план и сочинение через DeepSeek
+    </div>
+
+    <script>
+        let currentLinks = [];
+        let selectedUrl = null;
+        let bookTitle = '';
+        let currentSummary = '';
+        let currentPlan = '';
+
+        // Поиск ссылок
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const title = document.getElementById('bookTitle').value.trim();
+            const author = document.getElementById('bookAuthor').value.trim();
+            const resultDiv = document.getElementById('searchResult');
+            const selectStep = document.getElementById('stepSelect');
+            const depthSelector = document.getElementById('depthSelector');
+            const summarizeBtn = document.getElementById('summarizeBtn');
+
+            if (!title) {
+                resultDiv.innerHTML = '<div class="error">Введите название книги.</div>';
+                return;
+            }
+
+            bookTitle = title;
+            resultDiv.innerHTML = '<div class="loading">⏳ Ищем ссылки...</div>';
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, author })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    resultDiv.innerHTML = `<div class="error">❌ ${err.detail || 'Ошибка поиска.'}</div>`;
+                    return;
+                }
+
+                const data = await response.json();
+                currentLinks = data.links;
+                if (currentLinks.length === 0) {
+                    resultDiv.innerHTML = '<div class="error">Ссылок не найдено. Попробуйте другое название.</div>';
+                    return;
+                }
+
+                resultDiv.innerHTML = `<div class="success">✅ Найдено ${currentLinks.length} ссылок.</div>`;
+                selectStep.classList.remove('hidden');
+                depthSelector.classList.add('hidden');
+                summarizeBtn.classList.add('hidden');
+                selectedUrl = null;
+                renderLinks(currentLinks);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Ошибка соединения: ${error.message}</div>`;
+            }
+        });
+
+        function renderLinks(links) {
+            const list = document.getElementById('linksList');
+            list.innerHTML = '';
+            links.forEach((url, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${index + 1}. ${url}`;
+                li.dataset.url = url;
+                li.addEventListener('click', () => {
+                    document.querySelectorAll('.links-list li').forEach(el => el.classList.remove('selected'));
+                    li.classList.add('selected');
+                    selectedUrl = url;
+                    document.getElementById('depthSelector').classList.remove('hidden');
+                    document.getElementById('summarizeBtn').classList.remove('hidden');
+                });
+                list.appendChild(li);
+            });
+        }
+
+        // Пересказ
+        document.getElementById('summarizeBtn').addEventListener('click', async () => {
+            if (!selectedUrl) {
+                alert('Выберите ссылку.');
+                return;
+            }
+
+            const depthRadios = document.querySelectorAll('input[name="depth"]');
+            let depth = 'short';
+            for (const radio of depthRadios) {
+                if (radio.checked) {
+                    depth = radio.value;
+                    break;
+                }
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="loading">⏳ Скачиваем текст и генерируем пересказ...</div>';
+
+            try {
+                const response = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        url: selectedUrl, 
+                        title: bookTitle,
+                        depth: depth 
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    resultDiv.innerHTML = `<div class="error">❌ ${err.detail || 'Ошибка.'}</div>`;
+                    return;
+                }
+
+                const data = await response.json();
+                currentSummary = data.summary;
+                let html = `
+                    <h3>📖 ${bookTitle}</h3>
+                    <hr/>
+                    <h4>${getDepthLabel(depth)} пересказ:</h4>
+                    <p style="white-space: pre-wrap;">${data.summary}</p>
+                `;
+                if (data.usage && data.usage.total_tokens) {
+                    html += `
+                        <div class="usage-info">
+                            <strong>📊 Использовано токенов:</strong> ${data.usage.total_tokens} 
+                            (prompt: ${data.usage.prompt_tokens}, completion: ${data.usage.completion_tokens})<br>
+                            <strong>💲 Стоимость:</strong> $${data.usage.cost_usd} ≈ ${data.usage.cost_rub} ₽
+                        </div>
+                    `;
+                }
+                resultDiv.innerHTML = html;
+
+                document.getElementById('planBlock').classList.remove('hidden');
+                document.getElementById('planResult').innerHTML = '';
+                document.getElementById('essayResult').innerHTML = '';
+                document.getElementById('essayTopic').value = '';
+                document.getElementById('writeEssayBtn').style.display = 'none';
+                currentPlan = '';
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+            }
+        });
+
+        function getDepthLabel(depth) {
+            const labels = {
+                'very_short': 'Очень краткий',
+                'short': 'Краткий',
+                'medium': 'Средний',
+                'detailed': 'Подробный',
+                'deep': 'Глубокий'
+            };
+            return labels[depth] || depth;
+        }
+
+        // План сочинения
+        document.getElementById('planBtn').addEventListener('click', async () => {
+            const topic = document.getElementById('essayTopic').value.trim();
+            const planResult = document.getElementById('planResult');
+
+            if (!topic) {
+                planResult.innerHTML = '<div class="error">Введите тему сочинения.</div>';
+                return;
+            }
+
+            planResult.innerHTML = '<div class="loading">⏳ Генерируем план...</div>';
+            document.getElementById('writeEssayBtn').style.display = 'none';
+            document.getElementById('essayResult').innerHTML = '';
+
+            try {
+                const response = await fetch('/plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        title: bookTitle, 
+                        topic: topic,
+                        summary: currentSummary
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    planResult.innerHTML = `<div class="error">❌ ${err.detail || 'Ошибка.'}</div>`;
+                    return;
+                }
+
+                const data = await response.json();
+                currentPlan = data.plan;
+                let html = `<div style="background: #f0f4f8; padding: 15px; border-radius: 8px; white-space: pre-wrap;">${data.plan}</div>`;
+                if (data.usage && data.usage.total_tokens) {
+                    html += `
+                        <div class="usage-info">
+                            <strong>📊 Использовано токенов:</strong> ${data.usage.total_tokens} 
+                            (prompt: ${data.usage.prompt_tokens}, completion: ${data.usage.completion_tokens})<br>
+                            <strong>💲 Стоимость:</strong> $${data.usage.cost_usd} ≈ ${data.usage.cost_rub} ₽
+                        </div>
+                    `;
+                }
+                planResult.innerHTML = html;
+                document.getElementById('writeEssayBtn').style.display = 'inline-block';
+            } catch (error) {
+                planResult.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+            }
+        });
+
+        // Написать сочинение по плану
+        document.getElementById('writeEssayBtn').addEventListener('click', async () => {
+            const topic = document.getElementById('essayTopic').value.trim();
+            const essayResult = document.getElementById('essayResult');
+
+            if (!currentPlan) {
+                essayResult.innerHTML = '<div class="error">Сначала получите план.</div>';
+                return;
+            }
+
+            essayResult.innerHTML = '<div class="loading">⏳ Пишем сочинение...</div>';
+
+            try {
+                const response = await fetch('/write_essay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: bookTitle,
+                        topic: topic,
+                        plan: currentPlan,
+                        summary: currentSummary
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    essayResult.innerHTML = `<div class="error">❌ ${err.detail || 'Ошибка.'}</div>`;
+                    return;
+                }
+
+                const data = await response.json();
+                let html = `<div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #2ecc71; white-space: pre-wrap;">${data.essay}</div>`;
+                if (data.usage && data.usage.total_tokens) {
+                    html += `
+                        <div class="usage-info">
+                            <strong>📊 Использовано токенов:</strong> ${data.usage.total_tokens} 
+                            (prompt: ${data.usage.prompt_tokens}, completion: ${data.usage.completion_tokens})<br>
+                            <strong>💲 Стоимость:</strong> $${data.usage.cost_usd} ≈ ${data.usage.cost_rub} ₽
+                        </div>
+                    `;
+                }
+                essayResult.innerHTML = html;
+            } catch (error) {
+                essayResult.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
