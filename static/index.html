@@ -45,15 +45,15 @@
         .plan-block .btn-essay:hover { background: #27ae60; }
         #planResult, #essayResult { margin-top: 15px; white-space: pre-wrap; }
         #essayResult { background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #2ecc71; }
-        .usage-info { font-size: 0.9em; color: #555; margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px; }
+        /* удалён стиль для usage-info */
     </style>
 </head>
 <body>
     <h1>📚 Краткий пересказ книг</h1>
 
-    <!-- Шаг 1 -->
+    <!-- Шаг 1: Поиск книги  -->
     <div class="step" id="stepSearch">
-        <h2>🔍 Шаг 1: Найдите книгу</h2>
+        <h2>📖 Поиск произведения</h2>
         <div class="input-group">
             <input type="text" id="bookTitle" placeholder="Название книги (например, Гранатовый браслет)" />
             <input type="text" id="bookAuthor" placeholder="Автор (опционально)" />
@@ -62,7 +62,7 @@
         <div id="searchResult"></div>
     </div>
 
-    <!-- Шаг 2 -->
+    <!-- Шаг 2: Выбор ссылки и глубины -->
     <div class="step hidden" id="stepSelect">
         <h2>📄 Шаг 2: Выберите ссылку и глубину пересказа</h2>
         <p>Выберите ссылку, затем укажите желаемую глубину:</p>
@@ -80,12 +80,12 @@
         <button id="summarizeBtn" class="btn-summarize hidden">📖 Пересказать</button>
     </div>
 
-    <!-- Результат пересказа -->
+    <!-- Результат: пересказ -->
     <div id="result">
         <p>Здесь появится пересказ...</p>
     </div>
 
-    <!-- Блок плана и сочинения -->
+    <!-- Блок для плана и сочинения -->
     <div id="planBlock" class="plan-block hidden">
         <h3>✍️ Нужно написать сочинение?</h3>
         <p>Введите тему сочинения (например, «Тема любви в повести "Гранатовый браслет"»), и я составлю план.</p>
@@ -93,12 +93,14 @@
         <button id="planBtn" class="btn-plan">📝 Получить план</button>
         <div id="planResult"></div>
 
+        <!-- Кнопка для написания сочинения -->
         <button id="writeEssayBtn" class="btn-essay">📝 Написать сочинение по плану</button>
         <div id="essayResult"></div>
     </div>
 
+    <!-- Футер изменён -->
     <div class="footer">
-        Используются ИИ технологии. Отзыв можно оставить на s519295@mail.ru
+        Внимание работает ИИ. Отзыв на s519295@mail.ru
     </div>
 
     <script>
@@ -174,7 +176,7 @@
             });
         }
 
-        // Пересказ
+        // Пересказ (без вывода usage)
         document.getElementById('summarizeBtn').addEventListener('click', async () => {
             if (!selectedUrl) {
                 alert('Выберите ссылку.');
@@ -218,15 +220,7 @@
                     <h4>${getDepthLabel(depth)} пересказ:</h4>
                     <p style="white-space: pre-wrap;">${data.summary}</p>
                 `;
-                if (data.usage && data.usage.total_tokens) {
-                    html += `
-                        <div class="usage-info">
-                            <strong>📊 Использовано токенов:</strong> ${data.usage.total_tokens} 
-                            (prompt: ${data.usage.prompt_tokens}, completion: ${data.usage.completion_tokens})<br>
-                            <strong>💲 Стоимость:</strong> $${data.usage.cost_usd} ≈ ${data.usage.cost_rub} ₽
-                        </div>
-                    `;
-                }
+                // Удалён блок с usage-info
                 resultDiv.innerHTML = html;
 
                 document.getElementById('planBlock').classList.remove('hidden');
@@ -251,7 +245,7 @@
             return labels[depth] || depth;
         }
 
-        // План сочинения
+        // План (без вывода usage)
         document.getElementById('planBtn').addEventListener('click', async () => {
             const topic = document.getElementById('essayTopic').value.trim();
             const planResult = document.getElementById('planResult');
@@ -285,15 +279,7 @@
                 const data = await response.json();
                 currentPlan = data.plan;
                 let html = `<div style="background: #f0f4f8; padding: 15px; border-radius: 8px; white-space: pre-wrap;">${data.plan}</div>`;
-                if (data.usage && data.usage.total_tokens) {
-                    html += `
-                        <div class="usage-info">
-                            <strong>📊 Использовано токенов:</strong> ${data.usage.total_tokens} 
-                            (prompt: ${data.usage.prompt_tokens}, completion: ${data.usage.completion_tokens})<br>
-                            <strong>💲 Стоимость:</strong> $${data.usage.cost_usd} ≈ ${data.usage.cost_rub} ₽
-                        </div>
-                    `;
-                }
+                // Удалён блок usage-info
                 planResult.innerHTML = html;
                 document.getElementById('writeEssayBtn').style.display = 'inline-block';
             } catch (error) {
@@ -301,7 +287,7 @@
             }
         });
 
-        // Написать сочинение по плану
+        // Сочинение (без вывода usage)
         document.getElementById('writeEssayBtn').addEventListener('click', async () => {
             const topic = document.getElementById('essayTopic').value.trim();
             const essayResult = document.getElementById('essayResult');
@@ -333,15 +319,7 @@
 
                 const data = await response.json();
                 let html = `<div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #2ecc71; white-space: pre-wrap;">${data.essay}</div>`;
-                if (data.usage && data.usage.total_tokens) {
-                    html += `
-                        <div class="usage-info">
-                            <strong>📊 Использовано токенов:</strong> ${data.usage.total_tokens} 
-                            (prompt: ${data.usage.prompt_tokens}, completion: ${data.usage.completion_tokens})<br>
-                            <strong>💲 Стоимость:</strong> $${data.usage.cost_usd} ≈ ${data.usage.cost_rub} ₽
-                        </div>
-                    `;
-                }
+                // Удалён блок usage-info
                 essayResult.innerHTML = html;
             } catch (error) {
                 essayResult.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
