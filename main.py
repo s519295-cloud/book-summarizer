@@ -1,41 +1,49 @@
 import os
+import sys
 import re
 import requests
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
+print("🚀 Запуск приложения...")
+sys.stdout.flush()
+
 load_dotenv()
 
-app = FastAPI()
-
-# ---------- Конфигурация DeepSeek ----------
+# ---------- Проверка API-ключа ----------
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-client = OpenAI(
-    api_key=DEEPSEEK_API_KEY,
-    base_url="https://api.deepseek.com/v1"
-) if DEEPSEEK_API_KEY else None
-MODEL_NAME = "deepseek-chat"
+if not DEEPSEEK_API_KEY:
+    print("⚠️  DEEPSEEK_API_KEY не задан! Приложение будет работать в режиме заглушки.")
+    client = None
+else:
+    try:
+        client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com/v1")
+        print("✅ DeepSeek client инициализирован")
+    except Exception as e:
+        print(f"❌ Ошибка инициализации DeepSeek: {e}")
+        client = None
 
-# ---------- Тарифы DeepSeek (на 01.09.2026) ----------
-PRICES = {
-    "prompt": 0.14,      # $0.14 за 1M токенов ввода
-    "completion": 0.28,  # $0.28 за 1M токенов вывода
-}
-USD_TO_RUB = 92.5  # актуальный курс
+sys.stdout.flush()
+
+app = FastAPI()
+print("✅ FastAPI приложение создано")
+sys.stdout.flush()
+
+# ---------- Тарифы (для расчёта стоимости) ----------
+PRICES = {"prompt": 0.14, "completion": 0.28}
+USD_TO_RUB = 92.5
 
 def calculate_cost(usage):
     prompt_tokens = usage.get('prompt_tokens', 0)
     completion_tokens = usage.get('completion_tokens', 0)
     total_tokens = usage.get('total_tokens', 0)
-
     cost_usd = (prompt_tokens / 1_000_000) * PRICES['prompt'] + (completion_tokens / 1_000_000) * PRICES['completion']
     cost_rub = cost_usd * USD_TO_RUB
-
     return {
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
@@ -48,7 +56,6 @@ def calculate_cost(usage):
 def search_links_with_deepseek(title: str, author: str = None) -> list:
     if client is None:
         return []
-
     author_part = f" автора {author}" if author else ""
     prompt = f"""
 Найди 5-10 ссылок, где можно бесплатно и полностью прочитать произведение "{title}"{author_part} на русском языке.
@@ -60,7 +67,7 @@ https://another-site.ru/text
 """
     try:
         response = client.chat.completions.create(
-            model=MODEL_NAME,
+            model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=500
@@ -78,26 +85,21 @@ def check_page_for_text(url: str, title: str, author: str = None) -> tuple:
         resp = requests.get(url, headers=headers, timeout=10)
         if resp.status_code != 200:
             return False, f"HTTP {resp.status_code}"
-        
         soup = BeautifulSoup(resp.text, 'html.parser')
         for tag in soup(['script', 'style', 'nav', 'footer', 'header']):
             tag.decompose()
         text = soup.get_text(separator=' ', strip=True)
         text = ' '.join(text.split())
-        
         if len(text) < 1000:
             return False, f"Текст короткий ({len(text)} символов)"
-        
         title_lower = re.sub(r'[^\w\s]', '', title).lower()
         title_words = title_lower.split()
         if not any(word in text.lower() for word in title_words):
             return False, "Название не найдено в тексте"
-        
         if author:
             author_lower = author.lower()
             if author_lower not in text.lower():
                 return False, f"Автор '{author}' не найден"
-        
         return True, "OK"
     except Exception as e:
         return False, f"Ошибка: {e}"
@@ -106,18 +108,13 @@ def find_valid_links(title: str, author: str = None, max_links: int = 5) -> list
     raw_links = search_links_with_deepseek(title, author)
     if not raw_links:
         return []
-    
     raw_links = list(dict.fromkeys(raw_links))
-    print(f"DeepSeek вернул {len(raw_links)} ссылок")
-    
     valid = []
     for url in raw_links:
         if url.startswith('http'):
-            print(f"Проверяем: {url}")
             is_valid, reason = check_page_for_text(url, title, author)
             if is_valid:
                 valid.append(url)
-                print(f"  ✅ Валидная")
                 if len(valid) >= max_links:
                     break
             else:
@@ -144,7 +141,6 @@ def summarize_text(text: str, title: str, depth: str = 'short') -> dict:
         return {"summary": "❌ API-ключ DeepSeek не задан.", "usage": {}}
     if not text or len(text) < 100:
         return {"summary": "❌ Текст слишком короткий.", "usage": {}}
-
     depth_config = {
         'very_short': {'label': 'очень краткий (100–200 слов)', 'words': '100–200', 'instruction': 'Сделай максимально сжатый пересказ, только самая суть. Опиши главных героев, завязку и развязку в двух-трёх предложениях.'},
         'short': {'label': 'краткий (200–300 слов)', 'words': '200–300', 'instruction': 'Сделай краткий пересказ, выдели главных героев, основные события, завязку и развязку.'},
@@ -152,7 +148,6 @@ def summarize_text(text: str, title: str, depth: str = 'short') -> dict:
         'detailed': {'label': 'подробный (400–500 слов)', 'words': '400–500', 'instruction': 'Сделай развёрнутый пересказ. Включи анализ поступков героев, их мотивы, ключевые диалоги и поворотные моменты.'},
         'deep': {'label': 'глубокий (500–700 слов)', 'words': '500–700', 'instruction': 'Сделай глубокий пересказ с элементами анализа. Добавь размышления о главной идее произведения, символизме, психологии персонажей и авторском замысле.'}
     }
-
     config = depth_config.get(depth, depth_config['short'])
     prompt = f"""
 Ты — помощник для школьников. Сделай {config['label']} пересказ произведения "{title}".
@@ -170,7 +165,7 @@ def summarize_text(text: str, title: str, depth: str = 'short') -> dict:
 """
     try:
         response = client.chat.completions.create(
-            model=MODEL_NAME,
+            model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1200
@@ -201,7 +196,7 @@ def generate_essay_plan(title: str, topic: str, summary: str) -> dict:
 """
     try:
         response = client.chat.completions.create(
-            model=MODEL_NAME,
+            model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.6,
             max_tokens=600
@@ -230,7 +225,7 @@ def write_essay(title: str, topic: str, plan: str, summary: str) -> dict:
 """
     try:
         response = client.chat.completions.create(
-            model=MODEL_NAME,
+            model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1500
@@ -263,19 +258,27 @@ class EssayRequest(BaseModel):
     summary: str
 
 @app.get("/", response_class=HTMLResponse)
-def front():
+def home():
     with open("static/index.html", "r", encoding="utf-8") as f:
         return f.read()
 
+@app.get("/ping")
+def ping():
+    return {"status": "ok", "message": "Сервер работает"}
+
 @app.post("/search")
 def search_links_endpoint(request: SearchRequest):
+    if client is None:
+        raise HTTPException(status_code=503, detail="DeepSeek API не доступен. Проверьте ключ.")
     links = find_valid_links(request.title, request.author, max_links=5)
     if not links:
-        raise HTTPException(status_code=404, detail="Не найдено ссылок с полным текстом. Попробуйте уточнить запрос.")
+        raise HTTPException(status_code=404, detail="Не найдено ссылок с полным текстом.")
     return JSONResponse({"links": links})
 
 @app.post("/summarize")
 def summarize_endpoint(request: SummarizeRequest):
+    if client is None:
+        raise HTTPException(status_code=503, detail="DeepSeek API не доступен.")
     try:
         text = download_text_from_url(request.url)
     except Exception as e:
@@ -291,6 +294,8 @@ def summarize_endpoint(request: SummarizeRequest):
 
 @app.post("/plan")
 def plan_endpoint(request: PlanRequest):
+    if client is None:
+        raise HTTPException(status_code=503, detail="DeepSeek API не доступен.")
     result = generate_essay_plan(request.title, request.topic, request.summary)
     plan = result['plan']
     usage = result['usage']
@@ -304,6 +309,8 @@ def plan_endpoint(request: PlanRequest):
 
 @app.post("/write_essay")
 def write_essay_endpoint(request: EssayRequest):
+    if client is None:
+        raise HTTPException(status_code=503, detail="DeepSeek API не доступен.")
     result = write_essay(request.title, request.topic, request.plan, request.summary)
     essay = result['essay']
     usage = result['usage']
@@ -316,5 +323,5 @@ def write_essay_endpoint(request: EssayRequest):
     })
 
 if __name__ == "__main__":
-    os.makedirs("static", exist_ok=True)
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="debug")
+    print("🚀 Запуск uvicorn...")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
