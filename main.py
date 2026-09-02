@@ -4,7 +4,7 @@ import re
 import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, Response
 from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -275,6 +275,20 @@ async def yandex_verify():
     else:
         # Если файла нет, отдаём содержимое напрямую
         return HTMLResponse(content='<html><body>Verification: 8014abb5af78fa5c</body></html>')
+
+# ---------- Эндпоинт для Sitemap ----------
+@app.get("/sitemap.xml")
+async def sitemap():
+    xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://book-summarizer.relaxdev.ru/</loc>
+    <lastmod>2026-09-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>"""
+    return Response(content=xml_content, media_type="application/xml")
 
 # ---------- Основные эндпоинты ----------
 @app.post("/search")
