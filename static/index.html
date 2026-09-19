@@ -1,344 +1,128 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript">
-        (function(m,e,t,r,i,k,a){
-            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();
-            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=112181807', 'ym');
-
-        ym(112181807, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/112181807" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Краткий пересказ книг</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-            background: #f7f9fc;
-            color: #1a1a2e;
-        }
-        h1 { color: #16213e; text-align: center; border-bottom: 3px solid #0f3460; padding-bottom: 10px; }
-        .step { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .step h2 { margin-top: 0; color: #0f3460; }
-        .input-group { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
-        .input-group input, .input-group button { padding: 12px; border-radius: 8px; font-size: 16px; border: 1px solid #ccc; }
-        .input-group input { flex: 2; }
-        .input-group button { flex: 1; background: #0f3460; color: white; border: none; cursor: pointer; }
-        .input-group button:hover { background: #1a4f7a; }
-        .links-list { list-style: none; padding: 0; }
-        .links-list li { margin: 10px 0; padding: 10px; background: #eef2f7; border-radius: 6px; cursor: pointer; border: 2px solid transparent; word-break: break-all; }
-        .links-list li:hover { border-color: #0f3460; background: #dde4ed; }
-        .links-list li.selected { border-color: #0f3460; background: #c5d5e6; }
-        .depth-selector { margin: 15px 0; padding: 15px; background: #eef2f7; border-radius: 8px; }
-        .depth-selector label { margin-right: 15px; display: inline-block; }
-        .depth-selector input[type="radio"] { margin-right: 5px; }
-        .depth-description { font-size: 0.9em; color: #555; margin-left: 5px; }
-        #result { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-top: 20px; line-height: 1.6; }
-        .loading { color: #0f3460; text-align: center; font-style: italic; }
-        .error { color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 8px; margin: 10px 0; }
-        .success { color: #2e7d32; background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 10px 0; }
-        .hidden { display: none; }
-        .footer { margin-top: 30px; text-align: center; font-size: 0.9em; color: #666; }
-        .btn-summarize { background: #0f3460; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        .btn-summarize:hover { background: #1a4f7a; }
-        .plan-block { margin-top: 20px; border-top: 2px dashed #0f3460; padding-top: 20px; }
-        .plan-block textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; min-height: 60px; box-sizing: border-box; }
-        .plan-block .btn-plan { background: #e67e22; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        .plan-block .btn-plan:hover { background: #d35400; }
-        .plan-block .btn-essay { background: #2ecc71; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 10px; display: none; }
-        .plan-block .btn-essay:hover { background: #27ae60; }
-        #planResult, #essayResult { margin-top: 15px; white-space: pre-wrap; }
-        #essayResult { background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #2ecc71; }
-        .footer { margin-top: 30px; text-align: center; font-size: 0.9em; color: #888; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="AI-сервис для краткого пересказа книг, анализа произведений и подготовки плана сочинения.">
+  <title>book-summarizer — умная работа с книгой</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>📚 Краткий пересказ книг</h1>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">▰</div>
+      <div>
+        <div class="brand-title">book-summarizer</div>
+        <div class="brand-subtitle">Умная работа с книгой</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" type="button" aria-label="Поиск">⌕</button>
+      <button class="ghost-btn" type="button">▤ Мои книги</button>
+      <div class="profile"><div class="avatar">A</div><span>Локальный режим</span></div>
+    </div>
+  </header>
 
-    <!-- Шаг 1: Поиск книги (заголовок изменён) -->
-    <div class="step" id="stepSearch">
-        <h2>📖 Поиск произведения</h2>
-        <div class="input-group">
-            <input type="text" id="bookTitle" placeholder="Название книги (например, Гранатовый браслет)" />
-            <input type="text" id="bookAuthor" placeholder="Автор (опционально)" />
-            <button id="searchBtn">🔎 Найти ссылки</button>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <nav class="nav">
+        <button class="nav-item" data-target="book" type="button"><span class="nav-icon">⌂</span><span>Книга</span></button>
+        <button class="nav-item active" data-target="summary" type="button"><span class="nav-icon">▤</span><span>Пересказ</span></button>
+        <button class="nav-item" data-target="heroes" type="button"><span class="nav-icon">◎</span><span>Герои</span></button>
+        <button class="nav-item" data-target="analysis" type="button"><span class="nav-icon">▥</span><span>Анализ</span></button>
+        <button class="nav-item" data-target="plan" type="button"><span class="nav-icon">≡</span><span>План сочинения</span></button>
+        <button class="nav-item" data-target="essay" type="button"><span class="nav-icon">✎</span><span>Сочинение</span></button>
+      </nav>
+      <div class="sidebar-note"><strong>Книга — это рабочее пространство</strong>Сначала найдите текст, затем выберите нужный инструмент.</div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div>
+          <h1>Перескажите любую книгу за несколько минут</h1>
+          <p>Мы найдём текст, создадим понятный пересказ и поможем подготовить план сочинения.</p>
         </div>
-        <div id="searchResult"></div>
-    </div>
+        <div class="hero-art"><div class="book-glyph">⌑</div><small>БОЛЬШИЕ КНИГИ<br>НАЧИНАЮТСЯ<br>С БОЛЬШИХ ИДЕЙ</small></div>
+      </section>
 
-    <!-- Шаг 2: Выбор ссылки и глубины -->
-    <div class="step hidden" id="stepSelect">
-        <h2>📄 Шаг 2: Выберите ссылку и глубину пересказа</h2>
-        <p>Выберите ссылку, затем укажите желаемую глубину:</p>
-        <ul class="links-list" id="linksList"></ul>
+      <section class="card section" id="searchSection">
+        <h2 class="section-title"><span class="dot-icon">⌕</span>Поиск книги</h2>
+        <div class="search-grid">
+          <div class="field"><label for="bookTitle">Название произведения</label><input id="bookTitle" placeholder="Например, Гранатовый браслет"></div>
+          <div class="field"><label for="bookAuthor">Автор</label><input id="bookAuthor" placeholder="Например, Александр Куприн"></div>
+          <button class="primary-btn" id="searchBtn" type="button">Найти книгу</button>
+        </div>
+        <p class="helper">Мы подберём источники с полным текстом и подготовим рабочее пространство книги.</p>
+        <div id="searchState" class="state-box hidden"></div>
+      </section>
 
-        <div class="depth-selector hidden" id="depthSelector">
-            <p><strong>Выберите глубину пересказа:</strong></p>
-            <label><input type="radio" name="depth" value="very_short"> Очень краткий <span class="depth-description">(100–200 слов)</span></label><br>
-            <label><input type="radio" name="depth" value="short" checked> Краткий <span class="depth-description">(200–300 слов)</span></label><br>
-            <label><input type="radio" name="depth" value="medium"> Средний <span class="depth-description">(300–400 слов)</span></label><br>
-            <label><input type="radio" name="depth" value="detailed"> Подробный <span class="depth-description">(400–500 слов)</span></label><br>
-            <label><input type="radio" name="depth" value="deep"> Глубокий <span class="depth-description">(500–700 слов)</span></label>
+      <section class="card section hidden" id="sourcesSection">
+        <h2 class="section-title"><span class="dot-icon">▤</span>Выберите источник</h2>
+        <div class="sources-grid" id="sourcesGrid"></div>
+      </section>
+
+      <section class="card section hidden" id="depthSection">
+        <h2 class="section-title"><span class="dot-icon">≡</span>Выберите глубину пересказа</h2>
+        <div class="depth-grid">
+          <button class="depth-card" data-depth="very_short" type="button"><span class="depth-tick">✓</span><span class="depth-name">Очень кратко</span><span class="depth-hint">1–2 минуты чтения</span></button>
+          <button class="depth-card selected" data-depth="short" type="button"><span class="depth-tick">✓</span><span class="depth-name">Кратко</span><span class="depth-hint">Только основные события</span></button>
+          <button class="depth-card" data-depth="medium" type="button"><span class="depth-tick">✓</span><span class="depth-name">Средне</span><span class="depth-hint">Сюжет и герои</span></button>
+          <button class="depth-card" data-depth="detailed" type="button"><span class="depth-tick">✓</span><span class="depth-name">Подробно</span><span class="depth-hint">Больше деталей</span></button>
+          <button class="depth-card" data-depth="deep" type="button"><span class="depth-tick">✓</span><span class="depth-name">Глубоко</span><span class="depth-hint">Сюжет + анализ</span></button>
+        </div>
+        <div class="generate-row"><button class="primary-btn" id="generateBtn" type="button" disabled>Создать пересказ</button></div>
+      </section>
+
+      <section class="card book-card hidden" id="workspaceSection">
+        <div class="book-head">
+          <div class="cover" aria-hidden="true"></div>
+          <div class="book-meta"><h2 id="bookResultTitle">Книга</h2><p id="bookResultMeta">Пересказ</p></div>
+          <div class="book-actions">
+            <button class="small-btn" id="copyBtn" type="button">Скопировать</button>
+            <button class="small-btn" id="shorterBtn" type="button">Сделать короче</button>
+            <button class="small-btn" id="longerBtn" type="button">Сделать подробнее</button>
+          </div>
         </div>
 
-        <button id="summarizeBtn" class="btn-summarize hidden">📖 Пересказать</button>
-    </div>
+        <div class="tabs">
+          <button class="tab active" data-tab="summary" type="button">Пересказ</button>
+          <button class="tab" data-tab="heroes" type="button">Герои</button>
+          <button class="tab" data-tab="analysis" type="button">Анализ</button>
+          <button class="tab" data-tab="plan" type="button">План сочинения</button>
+          <button class="tab" data-tab="essay" type="button">Сочинение</button>
+        </div>
 
-    <!-- Результат: пересказ -->
-    <div id="result">
-        <p>Здесь появится пересказ...</p>
-    </div>
+        <div class="tab-panel" id="panel-summary">
+          <div id="summaryState" class="state-box hidden"></div>
+          <div class="summary-text" id="summaryText"></div>
+        </div>
+        <div class="tab-panel hidden" id="panel-heroes"><div class="empty-panel"><strong>Герои</strong>Интерфейс раздела уже предусмотрен. Генерацию карточек героев подключим следующим этапом.</div></div>
+        <div class="tab-panel hidden" id="panel-analysis"><div class="empty-panel"><strong>Анализ произведения</strong>Здесь можно будет разместить темы, идеи, конфликт, символы и авторский замысел.</div></div>
+        <div class="tab-panel hidden" id="panel-plan"><div class="empty-panel"><strong>План ещё не создан</strong>Введите тему ниже и нажмите «Составить план».</div></div>
+        <div class="tab-panel hidden" id="panel-essay"><div class="empty-panel"><strong>Сочинение ещё не создано</strong>Сначала составьте план, затем запустите написание сочинения.</div></div>
+      </section>
 
-    <!-- Блок для плана и сочинения -->
-    <div id="planBlock" class="plan-block hidden">
-        <h3>✍️ Нужно написать сочинение?</h3>
-        <p>Введите тему сочинения (например, «Тема любви в повести "Гранатовый браслет"»), и я составлю план.</p>
-        <textarea id="essayTopic" placeholder="Тема сочинения..."></textarea>
-        <button id="planBtn" class="btn-plan">📝 Получить план</button>
-        <div id="planResult"></div>
+      <section class="card section hidden" id="essaySection">
+        <h2 class="section-title"><span class="dot-icon">✎</span>Нужно написать сочинение?</h2>
+        <div class="essay-grid">
+          <div>
+            <div class="field"><label for="essayTopic">Тема сочинения</label><textarea id="essayTopic" rows="4" placeholder="Введите тему сочинения"></textarea></div>
+            <div class="essay-actions">
+              <button class="primary-btn" id="planBtn" type="button">Составить план</button>
+              <button class="secondary-btn" id="writeEssayBtn" type="button" disabled>Написать сочинение</button>
+            </div>
+            <div id="essayState" class="state-box hidden"></div>
+          </div>
+          <div class="plan-preview">
+            <h4>План сочинения</h4>
+            <div class="plan-content" id="planContent">После генерации план появится здесь.</div>
+          </div>
+        </div>
+      </section>
 
-        <!-- Кнопка для написания сочинения -->
-        <button id="writeEssayBtn" class="btn-essay">📝 Написать сочинение по плану</button>
-        <div id="essayResult"></div>
-    </div>
-
-    <!-- Футер изменён -->
-    <div class="footer">
-        Внимание работает ИИ. Отзыв на s519295@mail.ru
-    </div>
-
-    <script>
-        let currentLinks = [];
-        let selectedUrl = null;
-        let bookTitle = '';
-        let currentSummary = '';
-        let currentPlan = '';
-
-        // Поиск ссылок
-        document.getElementById('searchBtn').addEventListener('click', async () => {
-            const title = document.getElementById('bookTitle').value.trim();
-            const author = document.getElementById('bookAuthor').value.trim();
-            const resultDiv = document.getElementById('searchResult');
-            const selectStep = document.getElementById('stepSelect');
-            const depthSelector = document.getElementById('depthSelector');
-            const summarizeBtn = document.getElementById('summarizeBtn');
-
-            if (!title) {
-                resultDiv.innerHTML = '<div class="error">Введите название книги.</div>';
-                return;
-            }
-
-            bookTitle = title;
-            resultDiv.innerHTML = '<div class="loading">⏳ Ищем ссылки...</div>';
-
-            try {
-                const response = await fetch('/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, author })
-                });
-
-                if (!response.ok) {
-                    const err = await response.json();
-                    resultDiv.innerHTML = `<div class="error">❌ ${err.detail || 'Ошибка поиска.'}</div>`;
-                    return;
-                }
-
-                const data = await response.json();
-                currentLinks = data.links;
-                if (currentLinks.length === 0) {
-                    resultDiv.innerHTML = '<div class="error">Ссылок не найдено. Попробуйте другое название.</div>';
-                    return;
-                }
-
-                resultDiv.innerHTML = `<div class="success">✅ Найдено ${currentLinks.length} ссылок.</div>`;
-                selectStep.classList.remove('hidden');
-                depthSelector.classList.add('hidden');
-                summarizeBtn.classList.add('hidden');
-                selectedUrl = null;
-                renderLinks(currentLinks);
-            } catch (error) {
-                resultDiv.innerHTML = `<div class="error">❌ Ошибка соединения: ${error.message}</div>`;
-            }
-        });
-
-        function renderLinks(links) {
-            const list = document.getElementById('linksList');
-            list.innerHTML = '';
-            links.forEach((url, index) => {
-                const li = document.createElement('li');
-                li.textContent = `${index + 1}. ${url}`;
-                li.dataset.url = url;
-                li.addEventListener('click', () => {
-                    document.querySelectorAll('.links-list li').forEach(el => el.classList.remove('selected'));
-                    li.classList.add('selected');
-                    selectedUrl = url;
-                    document.getElementById('depthSelector').classList.remove('hidden');
-                    document.getElementById('summarizeBtn').classList.remove('hidden');
-                });
-                list.appendChild(li);
-            });
-        }
-
-        // Пересказ (без вывода usage)
-        document.getElementById('summarizeBtn').addEventListener('click', async () => {
-            if (!selectedUrl) {
-                alert('Выберите ссылку.');
-                return;
-            }
-
-            const depthRadios = document.querySelectorAll('input[name="depth"]');
-            let depth = 'short';
-            for (const radio of depthRadios) {
-                if (radio.checked) {
-                    depth = radio.value;
-                    break;
-                }
-            }
-
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = '<div class="loading">⏳ Скачиваем текст и генерируем пересказ...</div>';
-
-            try {
-                const response = await fetch('/summarize', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        url: selectedUrl, 
-                        title: bookTitle,
-                        depth: depth 
-                    })
-                });
-
-                if (!response.ok) {
-                    const err = await response.json();
-                    resultDiv.innerHTML = `<div class="error">❌ ${err.detail || 'Ошибка.'}</div>`;
-                    return;
-                }
-
-                const data = await response.json();
-                currentSummary = data.summary;
-                let html = `
-                    <h3>📖 ${bookTitle}</h3>
-                    <hr/>
-                    <h4>${getDepthLabel(depth)} пересказ:</h4>
-                    <p style="white-space: pre-wrap;">${data.summary}</p>
-                `;
-                // Удалён блок с usage-info
-                resultDiv.innerHTML = html;
-
-                document.getElementById('planBlock').classList.remove('hidden');
-                document.getElementById('planResult').innerHTML = '';
-                document.getElementById('essayResult').innerHTML = '';
-                document.getElementById('essayTopic').value = '';
-                document.getElementById('writeEssayBtn').style.display = 'none';
-                currentPlan = '';
-            } catch (error) {
-                resultDiv.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
-            }
-        });
-
-        function getDepthLabel(depth) {
-            const labels = {
-                'very_short': 'Очень краткий',
-                'short': 'Краткий',
-                'medium': 'Средний',
-                'detailed': 'Подробный',
-                'deep': 'Глубокий'
-            };
-            return labels[depth] || depth;
-        }
-
-        // План (без вывода usage)
-        document.getElementById('planBtn').addEventListener('click', async () => {
-            const topic = document.getElementById('essayTopic').value.trim();
-            const planResult = document.getElementById('planResult');
-
-            if (!topic) {
-                planResult.innerHTML = '<div class="error">Введите тему сочинения.</div>';
-                return;
-            }
-
-            planResult.innerHTML = '<div class="loading">⏳ Генерируем план...</div>';
-            document.getElementById('writeEssayBtn').style.display = 'none';
-            document.getElementById('essayResult').innerHTML = '';
-
-            try {
-                const response = await fetch('/plan', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        title: bookTitle, 
-                        topic: topic,
-                        summary: currentSummary
-                    })
-                });
-
-                if (!response.ok) {
-                    const err = await response.json();
-                    planResult.innerHTML = `<div class="error">❌ ${err.detail || 'Ошибка.'}</div>`;
-                    return;
-                }
-
-                const data = await response.json();
-                currentPlan = data.plan;
-                let html = `<div style="background: #f0f4f8; padding: 15px; border-radius: 8px; white-space: pre-wrap;">${data.plan}</div>`;
-                // Удалён блок usage-info
-                planResult.innerHTML = html;
-                document.getElementById('writeEssayBtn').style.display = 'inline-block';
-            } catch (error) {
-                planResult.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
-            }
-        });
-
-        // Сочинение (без вывода usage)
-        document.getElementById('writeEssayBtn').addEventListener('click', async () => {
-            const topic = document.getElementById('essayTopic').value.trim();
-            const essayResult = document.getElementById('essayResult');
-
-            if (!currentPlan) {
-                essayResult.innerHTML = '<div class="error">Сначала получите план.</div>';
-                return;
-            }
-
-            essayResult.innerHTML = '<div class="loading">⏳ Пишем сочинение...</div>';
-
-            try {
-                const response = await fetch('/write_essay', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: bookTitle,
-                        topic: topic,
-                        plan: currentPlan,
-                        summary: currentSummary
-                    })
-                });
-
-                if (!response.ok) {
-                    const err = await response.json();
-                    essayResult.innerHTML = `<div class="error">❌ ${err.detail || 'Ошибка.'}</div>`;
-                    return;
-                }
-
-                const data = await response.json();
-                let html = `<div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 4px solid #2ecc71; white-space: pre-wrap;">${data.essay}</div>`;
-                // Удалён блок usage-info
-                essayResult.innerHTML = html;
-            } catch (error) {
-                essayResult.innerHTML = `<div class="error">❌ Ошибка: ${error.message}</div>`;
-            }
-        });
-    </script>
+      <div class="footer">book-summarizer · AI может ошибаться — важные факты стоит проверять по тексту произведения.</div>
+    </main>
+  </div>
+  <script src="/static/app.js"></script>
 </body>
 </html>
